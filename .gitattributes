@@ -1,0 +1,33 @@
+# Normalize line endings across platforms
+* text=auto
+.gitattributes text eol=lf
+
+# Force LF for source files and configs (recommended for Node/containers)
+*.js   text eol=lf
+*.jsx  text eol=lf
+*.ts   text eol=lf
+*.tsx  text eol=lf
+*.json text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.css  text eol=lf
+*.md   text eol=lf
+*.sql  text eol=lf
+Dockerfile text eol=lf
+*.dockerfile text eol=lf
+
+# Windows-specific scripts
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+*.ps1  text eol=crlf
+
+# Shell scripts
+*.sh   text eol=lf
+
+# Binary files
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.svg  text eol=lf
+*.pdf  binary

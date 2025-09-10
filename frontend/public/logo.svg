@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="160" height="48" viewBox="0 0 160 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="160" height="48" rx="10" fill="#0EA5E9"/>
+  <g font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-weight="700" font-size="22" fill="#ffffff">
+    <text x="20" y="31">DIGI</text>
+    <text x="78" y="31" fill="#FACC15">PRO</text>
+  </g>
+</svg>
