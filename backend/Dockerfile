@@ -60,9 +60,15 @@ RUN mkdir -p public/products public/stores public/reviews public/addons public/q
     mkdir -p .wwebjs_auth .wwebjs_cache && \
     chmod -R 755 public .wwebjs_auth .wwebjs_cache
 
-# Create a non-root user for security
-RUN groupadd -r appuser && useradd -r -g appuser -s /bin/bash appuser && \
-    chown -R appuser:appuser /app
+# Create a non-root user for security with proper home directory
+RUN groupadd -r appuser && useradd -r -g appuser -s /bin/bash -d /home/appuser -m appuser && \
+    mkdir -p /home/appuser/.local/share/applications && \
+    mkdir -p /home/appuser/.cache && \
+    mkdir -p /home/appuser/.config && \
+    chown -R appuser:appuser /app /home/appuser
+
+# Set HOME environment variable
+ENV HOME=/home/appuser
 
 # Switch to non-root user
 USER appuser
