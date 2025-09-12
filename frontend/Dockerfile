@@ -57,4 +57,4 @@ USER app
 EXPOSE 3000
 
 # Start the application
-CMD ["pnpm", "start"]
+CMD ["node", "node_modules/next/dist/bin/next", "start", "-H", "0.0.0.0", "-p", "3000"]
