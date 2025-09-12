@@ -1,71 +1,53 @@
-# Use official Node.js runtime as base image
-FROM node:18-slim
+# Production Environment Configuration
+# Backend Domain: https://digipro-backend.vpvmub.easypanel.host/
 
-# Install system dependencies for Puppeteer and Chromium
-RUN apt-get update && apt-get install -y \
-    wget \
-    curl \
-    gnupg \
-    ca-certificates \
-    procps \
-    chromium \
-    fonts-liberation \
-    libappindicator3-1 \
-    libasound2 \
-    libatk-bridge2.0-0 \
-    libdrm2 \
-    libgtk-3-0 \
-    libnspr4 \
-    libnss3 \
-    libx11-xcb1 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxrandr2 \
-    libxss1 \
-    libxtst6 \
-    xdg-utils \
-    --no-install-recommends && \
-    rm -rf /var/lib/apt/lists/*
+# Server Configuration
+NODE_ENV=production
+PORT=5000
+HOST=0.0.0.0
 
-# Install pnpm globally
-RUN npm install -g pnpm
+# Database Configuration (EasyPanel MySQL)
+DB_HOST=digipro_phpmyadmin
+DB_PORT=3306
+DB_USER=JimmyEfendy7
+DB_PASSWORD=@Jimmy_Irma25
+DB_NAME=digipro
 
-# Set working directory
-WORKDIR /app
+# JWT Configuration
+JWT_SECRET=your_secure_jwt_secret_here_change_this_in_production
+JWT_EXPIRES_IN=24h
 
-# Copy package files
-COPY package.json pnpm-lock.yaml ./
+# CORS Configuration
+CORS_ORIGIN=https://digipro-frontend.vpvmub.easypanel.host
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Base URLs
+BASE_URL=https://digipro-backend.vpvmub.easypanel.host
+PUBLIC_BASE_URL=https://digipro-backend.vpvmub.easypanel.host/public
 
-# Copy source code
-COPY . .
+# Frontend URL (for redirects, callbacks)
+FRONTEND_URL=https://digipro-frontend.vpvmub.easypanel.host
 
-# Create necessary directories for uploads and cache
-RUN mkdir -p public/products public/stores public/reviews public/addons public/qrcodes && \
-    mkdir -p .wwebjs_auth .wwebjs_cache && \
-    chmod -R 755 public .wwebjs_auth .wwebjs_cache
+# Midtrans Configuration
+MIDTRANS_CLIENT_KEY=SB-Mid-client-k1bOTfNl-TAgSYUp
+MIDTRANS_SERVER_KEY=SB-Mid-server-onl-0AK7NCtwByDGJP4R3PXe
+MIDTRANS_MERCHANT_ID=G151154882
+MIDTRANS_ENVIRONMENT=development
+MIDTRANS_WEBHOOK_URL=https://digipro-backend.vpvmub.easypanel.host/webhook/midtrans
 
-# Create a non-root user for security
-RUN groupadd -r appuser && useradd -r -g appuser -s /bin/bash appuser && \
-    chown -R appuser:appuser /app
+# WhatsApp Configuration
+WHATSAPP_WEB_HEADLESS=true
+WHATSAPP_WEB_DEVTOOLS=false
 
-# Switch to non-root user
-USER appuser
+# Puppeteer Configuration (for container)
+PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
+PUPPETEER_ARGS=--no-sandbox,--disable-setuid-sandbox,--disable-dev-shm-usage,--disable-accelerated-2d-canvas,--no-first-run,--no-zygote,--disable-gpu
+PUPPETEER_HEADLESS=new
+WHATSAPP_SILENT_MODE=false
+RESET_WHATSAPP_SESSION=false
 
-# Expose port (adjust if your app uses a different port)
-EXPOSE 5000
+# Rate Limiting
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
 
-# Set environment variables for Puppeteer
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
-ENV PUPPETEER_ARGS="--no-sandbox,--disable-setuid-sandbox,--disable-dev-shm-usage,--disable-accelerated-2d-canvas,--no-first-run,--no-zygote,--disable-gpu"
-ENV NODE_ENV=production
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:5000/health || exit 1
-
-# Start the application
-CMD ["pnpm", "start"]
+# Session Configuration
+SESSION_SECRET=your_secure_session_secret_here_change_this_in_production
