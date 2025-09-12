@@ -60,8 +60,22 @@ class WhatsAppService {
         defaultViewport: { width: 1366, height: 768 }
       };
       
+      // Tambahkan argumen dari ENV jika disediakan (dipisah koma)
+      if (process.env.PUPPETEER_ARGS) {
+        try {
+          const extraArgs = process.env.PUPPETEER_ARGS.split(',').map(a => a.trim()).filter(Boolean);
+          puppeteerOptions.args.push(...extraArgs);
+          console.log('📱 Menambahkan PUPPETEER_ARGS dari ENV:', extraArgs);
+        } catch (e) {
+          console.warn('⚠️ Gagal mem-parsing PUPPETEER_ARGS, melewati.');
+        }
+      }
+      
       // Prioritaskan Chrome dengan pencarian yang lebih lengkap
+      const envBrowserPath = process.env.PUPPETEER_EXECUTABLE_PATH;
       const chromePaths = [
+        // ENV override — prioritas utama bila diset dan valid
+        ...(envBrowserPath ? [envBrowserPath] : []),
         // Windows Chrome paths (standard)
         'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
         'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
@@ -71,6 +85,7 @@ class WhatsAppService {
         // Linux Chrome paths
         '/usr/bin/google-chrome',
         '/usr/bin/google-chrome-stable',
+        '/opt/google/chrome/google-chrome',
         '/usr/bin/chromium-browser',
         '/snap/bin/chromium'
       ];
@@ -91,7 +106,7 @@ class WhatsAppService {
       
       console.log('📱 Mencari browser Chrome di sistem...');
       
-      // Cek semua path Chrome terlebih dahulu
+      // Cek semua path Chrome terlebih dahulu (termasuk ENV jika ada)
       for (const browserPath of chromePaths) {
         if (fs.existsSync(browserPath)) {
           foundBrowsers.push({ path: browserPath, type: 'Chrome' });
