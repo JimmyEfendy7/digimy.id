@@ -1,0 +1,31 @@
+# TEMPORARY FIX: Bypass Store Verification in Production
+# Apply this if you want immediate fix without database changes
+
+# File: src/controllers/storeController.js
+# Line 23-29: Comment out store verification check
+
+## BEFORE:
+# if (!store.is_verified) {
+#   console.log(`[WARN] Store with ID ${id} is not verified`);
+#   return res.status(404).json({
+#     success: false,
+#     message: 'Store not found'
+#   });
+# }
+
+## AFTER (temporary):
+// TEMP FIX: Skip verification check in production
+// if (!store.is_verified) {
+//   console.log(`[WARN] Store with ID ${id} is not verified`);
+//   return res.status(404).json({
+//     success: false,
+//     message: 'Store not found'
+//   });
+// }
+
+# Similar fix needed in:
+# - src/controllers/productController.js (getAllProducts function)
+# - Any other verification filtering logic
+
+# IMPORTANT: This is TEMPORARY fix only!
+# Proper fix is to update database store verification status.
