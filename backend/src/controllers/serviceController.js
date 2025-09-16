@@ -124,25 +124,9 @@ const getPopularServices = async (req, res) => {
       });
     }
     
-    // Jika masih tidak ada services, tambahkan data dummy 
-    // agar frontend tidak error (hanya untuk development/testing)
-    if (!services || services.length === 0) {
-      console.log('⚠️ Tidak ada data service ditemukan. Menggunakan data dummy untuk sementara...');
-      
-      // Membuat array dummy services untuk testing
-      services = Array.from({ length: limitNum }, (_, i) => ({
-        id: `dummy-${i+1}`,
-        name: `Jasa Dummy ${i+1}`,
-        price: 100000 * (i+1),
-        delivery_time: Math.floor(Math.random() * 10) + 1,
-        rating: (Math.random() * 2) + 3, // Rating 3-5
-        review_count: Math.floor(Math.random() * 100),
-        store_name: "Toko Testing",
-        poster_url: "/service-placeholder.jpg",
-        is_active: true,
-        is_verified: true,
-        created_at: new Date().toISOString()
-      }));
+    // No dummy data - return empty array if no services found
+    if (!services) {
+      services = [];
     }
     
     console.log(`📦 Mengambil ${services.length} layanan terpopuler`);
@@ -159,27 +143,14 @@ const getPopularServices = async (req, res) => {
     console.error('❌ Error detail:', error.message);
     console.error('❌ Error stack:', error.stack);
     
-    // Return dummy data on error to prevent frontend from breaking
-    const dummyServices = Array.from({ length: 8 }, (_, i) => ({
-      id: `error-${i+1}`,
-      name: `Jasa Dummy ${i+1}`,
-      price: 100000 * (i+1),
-      delivery_time: Math.floor(Math.random() * 10) + 1,
-      rating: (Math.random() * 2) + 3, // Rating 3-5
-      review_count: Math.floor(Math.random() * 100),
-      store_name: "Toko Testing",
-      poster_url: "/service-placeholder.jpg",
-      is_active: true,
-      is_verified: true,
-      created_at: new Date().toISOString()
-    }));
-    
-    return res.status(200).json({
-      success: true,
-      data: dummyServices,
+    // Return error response instead of dummy data
+    return res.status(500).json({
+      success: false,
+      message: 'Terjadi kesalahan server saat mengambil layanan',
+      data: [],
       pagination: {
         limit: 8,
-        total: dummyServices.length
+        total: 0
       },
       error_info: process.env.NODE_ENV === 'development' ? error.message : 'Internal Server Error'
     });
