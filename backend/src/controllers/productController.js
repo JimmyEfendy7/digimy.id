@@ -15,23 +15,47 @@ const getAllProducts = async (req, res) => {
     const { limit = 10, page = 1, category_id, is_official } = req.query;
     const offset = (page - 1) * limit;
     
-    // Build where clause
-    const where = { 
-      is_active: true,
-      is_verified: true
-    };
+    console.log('🔍 [DEBUG] getAllProducts called with params:', { limit, page, category_id, is_official });
     
-    if (category_id) {
-      where.category_id = category_id;
+    // First, let's do a simple direct query to see if products exist at all
+    const simpleCountSql = 'SELECT COUNT(*) as total FROM products';
+    const allProductsCount = await Product.query(simpleCountSql);
+    console.log('🔍 [DEBUG] Total products in database:', allProductsCount[0].total);
+    
+    const activeVerifiedCountSql = 'SELECT COUNT(*) as total FROM products WHERE is_active = 1 AND is_verified = 1';
+    const activeVerifiedCount = await Product.query(activeVerifiedCountSql);
+    console.log('🔍 [DEBUG] Active & verified products:', activeVerifiedCount[0].total);
+    
+    // Check stores verification
+    const storesCountSql = 'SELECT COUNT(*) as total FROM stores WHERE is_verified = 1';
+    const verifiedStoresCount = await Product.query(storesCountSql);
+    console.log('🔍 [DEBUG] Verified stores:', verifiedStoresCount[0].total);
+    
+    // Try simple query without complex joins first
+    const simpleProductsSql = `
+      SELECT p.id, p.name, p.price, p.is_active, p.is_verified, p.store_id, p.created_at
+      FROM products p
+      WHERE p.is_active = 1 AND p.is_verified = 1
+      ORDER BY p.created_at DESC
+      LIMIT ?
+    `;
+    
+    const simpleProducts = await Product.query(simpleProductsSql, [parseInt(limit)]);
+    console.log('🔍 [DEBUG] Simple products query result count:', simpleProducts.length);
+    
+    if (simpleProducts.length > 0) {
+      console.log('🔍 [DEBUG] First product sample:', {
+        id: simpleProducts[0].id,
+        name: simpleProducts[0].name,
+        is_active: simpleProducts[0].is_active,
+        is_verified: simpleProducts[0].is_verified,
+        store_id: simpleProducts[0].store_id
+      });
     }
     
-    if (is_official !== undefined) {
-      where.is_official = is_official === 'true';
-    }
-    
-    // Get products with join to categories and stores (only verified stores)
-    const sql = `
-      SELECT p.*, pc.name as category_name
+    // Now try the complex query with store verification
+    const complexSql = `
+      SELECT p.*, pc.name as category_name, s.is_verified as store_is_verified
       FROM products p
       LEFT JOIN product_categories pc ON p.category_id = pc.id
       LEFT JOIN stores s ON p.store_id = s.id
@@ -44,7 +68,8 @@ const getAllProducts = async (req, res) => {
       LIMIT ? OFFSET ?
     `;
     
-    const products = await Product.query(sql, [parseInt(limit), parseInt(offset)]);
+    const products = await Product.query(complexSql, [parseInt(limit), parseInt(offset)]);
+    console.log('🔍 [DEBUG] Complex query result count:', products.length);
     
     // Get total count for pagination
     const countSql = `
@@ -60,7 +85,8 @@ const getAllProducts = async (req, res) => {
     const countResult = await Product.query(countSql);
     const total = countResult[0].total;
     
-    console.log(`📦 Mengambil ${products.length} produk (page ${page}, limit ${limit})`);
+    console.log(`📦 [DEBUG] Final result: ${products.length} produk (page ${page}, limit ${limit}, total: ${total})`);
+    
     return res.status(200).json({
       success: true,
       data: products,
@@ -69,14 +95,23 @@ const getAllProducts = async (req, res) => {
         limit: parseInt(limit),
         total: total,
         totalPages: Math.ceil(total / limit)
+      },
+      debug: {
+        totalProductsInDb: allProductsCount[0].total,
+        activeVerifiedProducts: activeVerifiedCount[0].total,
+        verifiedStores: verifiedStoresCount[0].total,
+        simpleQueryCount: simpleProducts.length,
+        complexQueryCount: products.length
       }
     });
   } catch (error) {
     console.error('❌ Error saat mengambil produk:', error);
+    console.error('❌ Error stack:', error.stack);
     return res.status(500).json({
       success: false,
       message: 'Terjadi kesalahan pada server',
-      error: process.env.NODE_ENV === 'development' ? error.message : {}
+      error: process.env.NODE_ENV === 'development' ? error.message : {},
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 };
