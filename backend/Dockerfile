@@ -60,6 +60,13 @@ RUN mkdir -p public/products public/stores public/reviews public/addons public/q
     mkdir -p .wwebjs_auth .wwebjs_cache && \
     chmod -R 755 public .wwebjs_auth .wwebjs_cache
 
+# Verify assets were copied and list contents for debugging
+RUN echo "=== Verifying asset directories ===" && \
+    ls -la public/ && \
+    echo "Products directory:" && ls -la public/products/ | head -10 && \
+    echo "Reviews directory:" && ls -la public/reviews/ | head -5 && \
+    echo "Stores directory:" && ls -la public/stores/ | head -5
+
 # Create a non-root user for security with proper home directory
 RUN groupadd -r appuser && useradd -r -g appuser -s /bin/bash -d /home/appuser -m appuser && \
     mkdir -p /home/appuser/.local/share/applications && \
