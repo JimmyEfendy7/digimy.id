@@ -152,8 +152,6 @@ const getStoreProducts = async (req, res) => {
           name: products[0].name,
           price: products[0].price,
           promo_price: products[0].promo_price,
-          promo_start_date: products[0].promo_start_date,
-          promo_end_date: products[0].promo_end_date,
           total_products: products.length
         });
       }
